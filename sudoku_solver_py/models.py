@@ -13,6 +13,10 @@ class Model(BaseModel, ABC):
 class Cell(Model):
     value: int
 
+    @property
+    def is_vacant(self) -> bool:
+        return self.value == 0
+
     def is_valid() -> bool:
         pass
 
@@ -30,6 +34,10 @@ class GroupModel(Model):
         """Returns a list of values that are not yet present in this group."""
         taken_values = [v.value for v in self.cells if v != 0]
         return [v for v in range(1, 10) if v not in taken_values]
+
+    @property
+    def values(self) -> list[int]:
+        return [c.value for c in self.cells]
 
     def is_valid() -> bool:
         pass
