@@ -32,6 +32,11 @@ class GroupModel(Model):
         cell_values = [str(c.value) for c in self.cells]
         return ''.join(cell_values)
 
+    def __getitem__(self, index):
+        if not isinstance(index, int):
+            raise ValueError('index must be of type int')
+        return self.cells[index]
+
 
 class Row(GroupModel):
    pass

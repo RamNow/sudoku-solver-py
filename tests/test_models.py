@@ -1,4 +1,6 @@
-from sudoku_solver_py.models import Cell, Grid
+import pytest
+from tokenize import group
+from sudoku_solver_py.models import Box, Cell, Column, Grid, Row
 
 def test_find_box_index():
     
@@ -84,4 +86,16 @@ def test_cell_equals():
     assert not c3 == 2
     assert c2 != c3
     assert c3 != 2
-    
+
+
+@pytest.mark.parametrize("group_type", [Row, Column, Box])
+def test_get_value_by_cell_index(group_type: type):
+     # arrange
+    group_obj = group_type(index=0)
+    for i in range(9):
+        group_obj.cells.append(Cell(value=i*2))
+    # act + assert
+    for j in range(9):
+        assert group_obj[j] == j*2, 'GroupModel should be subscriptable'
+
+
