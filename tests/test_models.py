@@ -99,3 +99,20 @@ def test_get_value_by_cell_index(group_type: type):
         assert group_obj[j] == j*2, 'GroupModel should be subscriptable'
 
 
+@pytest.mark.parametrize("init_values,candidates", 
+    [
+        ([0,0,0,0,0,0,0,0,0],[1,2,3,4,5,6,7,8,9]),
+        ([1,2,3,4,5,6,7,8,9],[]),
+        ([0,1,0,4,0,5,6,0,8],[2,3,7,9]),
+    ])
+@pytest.mark.parametrize("group_type", [Row, Column, Box])
+def test_find_group_candidates(group_type: type, init_values: list[int], candidates: list[int]):
+    # arrange
+    group_obj = group_type(index=0)
+    for init_val in init_values:
+        group_obj.cells.append(Cell(value=init_val))
+    # act
+    actual_candidates = group_obj.candidates
+    # assert
+    assert actual_candidates == candidates
+    

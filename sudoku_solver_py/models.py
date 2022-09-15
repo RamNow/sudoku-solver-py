@@ -25,6 +25,12 @@ class GroupModel(Model):
     index: int
     cells: list[Cell] = Field(default_factory=list)
 
+    @property
+    def candidates(self) -> list[int]:
+        """Returns a list of values that are not yet present in this group."""
+        taken_values = [v.value for v in self.cells if v != 0]
+        return [v for v in range(1, 10) if v not in taken_values]
+
     def is_valid() -> bool:
         pass
 
