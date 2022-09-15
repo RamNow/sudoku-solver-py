@@ -1,4 +1,4 @@
-from sudoku_solver_py.models import Grid
+from sudoku_solver_py.models import Cell, Grid
 
 def test_find_box_index():
     
@@ -35,13 +35,13 @@ def test_init_grid():
     
     for i in range(9*9):
         val = int(numbers[i])
-        assert grid.cells[i].value == val
+        assert grid.cells[i] == val
 
-    assert grid.rows[0].cells[0].value == 2
-    assert grid.rows[0].cells[1].value == 3
-    assert grid.rows[0].cells[2].value == 7
-    assert grid.rows[0].cells[3].value == 8
-    assert grid.rows[1].cells[3].value == 7
+    assert grid.rows[0].cells[0] == 2
+    assert grid.rows[0].cells[1] == 3
+    assert grid.rows[0].cells[2] == 7
+    assert grid.rows[0].cells[3] == 8
+    assert grid.rows[1].cells[3] == 7
 
     assert str(grid.rows[0]) == '237841569'
     assert str(grid.rows[1]) == '186795243'
@@ -72,3 +72,16 @@ def test_init_grid():
     assert str(grid.boxes[6]) == '642853971'
     assert str(grid.boxes[7]) == '918467253'
     assert str(grid.boxes[8]) == '375921684'
+
+def test_cell_equals():
+    c1 = Cell(value=2)
+    c2 = Cell(value=2)
+    c3 = Cell(value=0)
+    assert c1 == 2
+    assert 2 == c1
+    assert c2 == c1
+    assert not c2 == c3
+    assert not c3 == 2
+    assert c2 != c3
+    assert c3 != 2
+    

@@ -16,6 +16,11 @@ class Cell(Model):
     def is_valid() -> bool:
         pass
 
+    def __eq__(self, obj):
+        return isinstance(obj, Cell) and obj.value == self.value or isinstance(obj, int) and obj == self.value
+            
+
+
 class GroupModel(Model):
     index: int
     cells: list[Cell] = Field(default_factory=list)
