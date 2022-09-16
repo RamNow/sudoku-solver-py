@@ -1,7 +1,11 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Protocol
-from pydantic import BaseModel, Field
+from typing import ForwardRef
+from pydantic import BaseModel, Field, validator
+
+class A(BaseModel):
+
+    i: int 
+    l: list[int] = Field(default_factory=list)
 
 
 class Model(BaseModel, ABC):
@@ -11,7 +15,23 @@ class Model(BaseModel, ABC):
 
 
 class Cell(Model):
+    """Representation of a single field of a Sudoku puzzle."""
+    
     value: int
+    row: "Row"
+    column: "Column"
+    box: "Box"
+
+    candidates: list[int] = Field(default_factory=list)
+
+    @validator('candidates', always=True)
+    def init_candidates(cls, v, values, **kwargs):
+        is_vacant = values['value'] == 0
+        if is_vacant:
+            # set candidates to all possible values
+            return list(range(1,10))
+        # set empty candidates
+        return list()
 
     @property
     def is_vacant(self) -> bool:
@@ -37,7 +57,8 @@ class GroupModel(Model):
 
     @property
     def values(self) -> list[int]:
-        return [c.value for c in self.cells]
+        """Returns a list of all cell values that are not vacant."""
+        return [c.value for c in self.cells if not c.is_vacant]
 
     def is_valid() -> bool:
         pass
@@ -78,6 +99,7 @@ class Grid(Model):
     columns: list[Column] = Field(default_factory=list)
     boxes: list[Box] = Field(default_factory=list)
 
+
     def __init__(self, numbers: str) -> None:
         super().__init__()
 
@@ -92,15 +114,18 @@ class Grid(Model):
             
             for col_index in range(9):
                 
-                val = row_values[col_index]
-                cell = Cell(value=int(val))
-                self.cells.append(cell)
-                self.rows[row_index].cells.append(cell)
-                self.columns[col_index].cells.append(cell)
+                row = self.rows[row_index]
+                column = self.columns[col_index]
+                box = self.boxes[self.find_box_index(row_index, col_index)]
 
-                # figure out to which box the cell belongs
-                box_index = self.find_box_index(row_index, col_index)
-                self.boxes[box_index].cells.append(cell)
+                val = row_values[col_index]
+                cell = Cell(value=int(val), row=row, column=column, box=box)
+                
+                self.cells.append(cell)
+                row.cells.append(cell)
+                column.cells.append(cell)
+                box.cells.append(cell)
+
 
     @staticmethod
     def find_box_index(row: int, col: int) -> int:
@@ -113,6 +138,9 @@ class Grid(Model):
             self.columns.append(Column(index=i))
             self.boxes.append(Box(index=i))
 
+
     def is_valid() -> bool:
         pass
             
+
+Cell.update_forward_refs()

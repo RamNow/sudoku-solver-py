@@ -75,10 +75,10 @@ def test_init_grid():
     assert str(grid.boxes[7]) == '918467253'
     assert str(grid.boxes[8]) == '375921684'
 
-def test_cell_equals():
-    c1 = Cell(value=2)
-    c2 = Cell(value=2)
-    c3 = Cell(value=0)
+def test_cell_equals(cell_factory):
+    c1 = cell_factory(value=2)
+    c2 = cell_factory(value=2)
+    c3 = cell_factory(value=0)
     assert c1 == 2
     assert 2 == c1
     assert c2 == c1
@@ -88,15 +88,43 @@ def test_cell_equals():
     assert c3 != 2
 
 
+@pytest.mark.parametrize("value,candidates,is_vacant", [
+    (0, [1,2,3,4,5,6,7,8,9], True),
+    (1, [], False),
+])
+def test_cell_initialization(value: int, candidates: list[int], is_vacant: bool, cell_factory):
+    cell = cell_factory(value=value)
+    assert cell.is_vacant == is_vacant
+    assert cell.candidates == candidates
+
+
 @pytest.mark.parametrize("group_type", [Row, Column, Box])
-def test_get_value_by_cell_index(group_type: type):
+def test_get_value_by_cell_index(group_type: type, cell_factory):
      # arrange
     group_obj = group_type(index=0)
     for i in range(9):
-        group_obj.cells.append(Cell(value=i*2))
+        group_obj.cells.append(cell_factory(value=i*2))
     # act + assert
     for j in range(9):
         assert group_obj[j] == j*2, 'GroupModel should be subscriptable'
+
+
+@pytest.mark.parametrize("init_values,values", 
+    [
+        ([0,0,0,0,0,0,0,0,0],[]),
+        ([1,2,3,4,5,6,7,8,9],[1,2,3,4,5,6,7,8,9]),
+        ([0,1,0,4,0,5,6,0,8],[1,4,5,6,8]),
+    ])
+@pytest.mark.parametrize("group_type", [Row, Column, Box])
+def test_get_values(group_type: type, init_values: list[int], values: list[int], cell_factory):
+     # arrange
+    group_obj = group_type(index=0)
+    for init_value in init_values:
+        group_obj.cells.append(cell_factory(value=init_value))
+    # act
+    actual_values = group_obj.values
+    # assert
+    assert actual_values == values
 
 
 @pytest.mark.parametrize("init_values,candidates", 
@@ -106,11 +134,11 @@ def test_get_value_by_cell_index(group_type: type):
         ([0,1,0,4,0,5,6,0,8],[2,3,7,9]),
     ])
 @pytest.mark.parametrize("group_type", [Row, Column, Box])
-def test_find_group_candidates(group_type: type, init_values: list[int], candidates: list[int]):
+def test_find_group_candidates(group_type: type, init_values: list[int], candidates: list[int], cell_factory):
     # arrange
     group_obj = group_type(index=0)
     for init_val in init_values:
-        group_obj.cells.append(Cell(value=init_val))
+        group_obj.cells.append(cell_factory(value=init_val))
     # act
     actual_candidates = group_obj.candidates
     # assert

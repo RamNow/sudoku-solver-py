@@ -1,5 +1,5 @@
 
-from sudoku_solver_py.models import GroupModel
+from sudoku_solver_py.models import Grid, GroupModel
 
 
 def find_single(group: GroupModel) -> bool:
@@ -15,4 +15,27 @@ def find_single(group: GroupModel) -> bool:
         if cell.is_vacant:
             cell.value = group.candidates[0]
             return True
+
+def reduce_candidates_by_group_constraints(grid: Grid) -> bool:
+    """
+    Walks over cell and removes candidates that are violating the constraints by given values in
+    - boxes
+    - rows
+    - columns
+    Returns true if any candidate in any cell could be removed.
+    """
+    
+    some_candidates_reduced = False
+
+    for cell in grid.cells:
+        before = cell.candidates.copy()
+        cell.candidates = [c for c in cell.candidates 
+            if not c in cell.row.values
+            if not c in cell.column.values
+            if not c in cell.box.values
+        ]
+        if before != cell.candidates:
+            some_candidates_reduced = True
+
+    return some_candidates_reduced
     
