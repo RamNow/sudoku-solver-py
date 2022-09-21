@@ -1,14 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import ForwardRef
 from pydantic import BaseModel, Field, validator
-
-class A(BaseModel):
-
-    i: int 
-    l: list[int] = Field(default_factory=list)
 
 
 class Model(BaseModel, ABC):
+    
     @abstractmethod
     def is_valid() -> bool:
         """Checks whether or not all Sudoku rules are followed."""
@@ -17,6 +12,7 @@ class Model(BaseModel, ABC):
 class Cell(Model):
     """Representation of a single field of a Sudoku puzzle."""
     
+    index: int
     value: int
     row: "Row"
     column: "Column"
@@ -119,7 +115,7 @@ class Grid(Model):
                 box = self.boxes[self.find_box_index(row_index, col_index)]
 
                 val = row_values[col_index]
-                cell = Cell(value=int(val), row=row, column=column, box=box)
+                cell = Cell(value=int(val), index=row_index*9 + col_index, row=row, column=column, box=box)
                 
                 self.cells.append(cell)
                 row.cells.append(cell)

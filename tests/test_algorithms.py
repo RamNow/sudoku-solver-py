@@ -84,15 +84,52 @@ def test_naked_pair(group_type: type, cell_factory):
     group_obj[2].candidates = [2,3]
     group_obj[5].candidates = [3,2]
 
+    group_obj[3].candidates = [8,9]
+    group_obj[8].candidates = [8,9]
+
     # act
-    was_successful = naked_pairs(group_obj)
+    naked_pair_indexes = naked_pairs(group_obj)
     # assert
-    assert was_successful
+    assert naked_pair_indexes
     
     for i in [0,1,3,4,6,7,8]:
         assert 2 not in group_obj[i].candidates
         assert 3 not in group_obj[i].candidates
 
+    for j in [0,1,2,4,5,6,7]:
+        assert 8 not in group_obj[j].candidates
+        assert 9 not in group_obj[j].candidates
+
     for np in [2,5]:
         assert 2 in group_obj[np].candidates
         assert 3 in group_obj[np].candidates
+    
+    for np2 in [3,8]:
+        assert 8 in group_obj[np2].candidates
+        assert 9 in group_obj[np2].candidates
+
+    expected_naked_pair_indexes = [
+        group_obj[2].index,
+        group_obj[3].index,
+        group_obj[5].index,
+        group_obj[8].index,
+    ]
+    assert set(expected_naked_pair_indexes) == set(naked_pair_indexes)
+
+
+
+@pytest.mark.parametrize("group_type", [Row, Column, Box])
+def test_naked_pair_skip_cells(group_type: type, cell_factory):
+    # arrange
+    group_obj: GroupModel = group_type(index=0)
+    for ci in range(9):
+        group_obj.cells.append(cell_factory(value=0, index=ci))
+
+    # naked pair - a pair of candidates in two cells of the group
+    group_obj[2].candidates = [2,3]
+    group_obj[5].candidates = [3,2]
+
+    # act
+    naked_pair_indexes = naked_pairs(group_obj, [2,5])
+    # assert
+    assert not naked_pair_indexes, 'Naked pair should have been skipped'
