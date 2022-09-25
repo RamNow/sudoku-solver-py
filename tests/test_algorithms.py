@@ -1,6 +1,6 @@
 import pytest
 from sudoku_solver_py.algorithms import find_single, reduce_candidates_by_group_constraints, naked_pairs, \
-    remove_from_candidates, naked_triplet, exists_triplet_match
+    remove_from_candidates, naked_triplets, exists_triplet_match, naked_quads
 
 from sudoku_solver_py.models import Box, Cell, Column, Grid, Row, GroupModel
 
@@ -165,7 +165,7 @@ def test_naked_triplet(group_type: type, init_values, init_candidates, expected_
         group_obj[i].candidates = list(init_candidates[i])
 
     # act
-    naked_triplet_indexes = naked_triplet(group_obj)
+    naked_triplet_indexes = naked_triplets(group_obj)
     # assert
     assert naked_triplet_indexes
 
@@ -187,3 +187,35 @@ def test_naked_triplet(group_type: type, init_values, init_candidates, expected_
 ])
 def test_exists_triplet_match(a: list[int], b: list[int], c: list[int], match_found: bool):
     assert exists_triplet_match(a, b, c) == match_found
+
+
+@pytest.mark.parametrize("init_values,init_candidates,expected_candidates,expected_naked_quads_indexes", [
+    # examples see https://www.learn-sudoku.com/naked-triplets.html
+    (
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [(1, 5), (1, 2, 4, 5), (2, 4, 5, 7), (1, 5, 6, 8), (1, 5, 6, 8), (3, 5, 6, 7, 8), (1, 6), (1, 2, 9), (3, 4, 6, 9)],
+            [(1, 5), (2, 4), (2, 4, 7), (1, 5, 6, 8), (1, 5, 6, 8), (3, 7), (1, 6), (2, 9), (3, 4, 9)],
+            [0, 3, 4, 6],
+    ),
+])
+@pytest.mark.parametrize("group_type", [Row, Column, Box])
+def test_naked_quads(group_type: type, init_values, init_candidates, expected_candidates, expected_naked_quads_indexes,
+                     cell_factory):
+    # arrange
+    group_obj: GroupModel = group_type(index=0)
+
+    for init_value in init_values:
+        group_obj.cells.append(cell_factory(value=init_value))
+
+    for i in range(9):
+        group_obj[i].candidates = list(init_candidates[i])
+
+    # act
+    naked_quads_indexes = naked_quads(group_obj)
+    # assert
+    assert naked_quads_indexes
+
+    for r in range(9):
+        assert set(group_obj[r].candidates) == set(expected_candidates[r])
+
+    assert set(naked_quads_indexes) == set(expected_naked_quads_indexes)
